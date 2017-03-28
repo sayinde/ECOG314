@@ -58,7 +58,7 @@ Occupationfilter <-
     (occupation == 4) |
       (occupation == 6) | (occupation == 7) | (occupation == 9) |
       (occupation == 4) | (occupation == 11) | (occupation == 12) |
-      (occupation == 8) | (occupation == 10) | (occupation == 5)
+      (occupation == 8) | (occupation == 10) | (occupation == 5) | (occupation == 3)
   )
 
 # I made a data frome called Occupation Filter because I didn't want to override my previous dataset, "Working Data 2015" (personal preference)
@@ -74,7 +74,8 @@ Occupationfilter <- Occupationfilter %>%
          occupation = ifelse(occupation == 12, 2, occupation),
          occupation =  ifelse(occupation == 8, 2, occupation),
          occupation = ifelse(occupation == 10, 2, occupation),
-         occupation =  ifelse(occupation == 5, 2, occupation)
+         occupation =  ifelse(occupation == 5, 2, occupation),
+         occupation =  ifelse(occupation == 3, 2, occupation)
   )
 
 #########recoding the "99's" in the educational attainment column as NAs (because that's what they are)
@@ -123,26 +124,128 @@ Occupationfilter <- Occupationfilter %>%
 
 ## Here, I'm grouping informal-formal participation by avg. education
 
-Occupationfilter %>%
+occu_gender <- Occupationfilter %>%
   group_by(occupation, gender) %>% 
   summarise(
     avg_ed = mean(edu_attainment, na.rm = T),
-    sd_edu = sd(edu_attainment),
+    sd_edu = sd(edu_attainment, na.rm = T),
     count = n()
+  ) %>%
+mutate(type = ifelse(occupation == 2 & gender == 1, "Informal Male", NA),
+       type = ifelse(occupation == 2 & gender == 2 , "Informal Female", type),
+       type = ifelse(occupation == 1 & gender == 2, "Formal Female", type),
+       type = ifelse(occupation == 1 & gender == 1, "Formal Male", type)
+       )
+
+# Error bars represent standard error of the mean
+ggplot(occu_gender, aes(x=type, y=avg_ed, fill=as.factor(gender))) + 
+  geom_bar(position=position_dodge(), stat="identity") +
+  geom_errorbar(aes(ymin=avg_ed-sd_edu/sqrt(count), ymax=avg_ed+sd_edu/sqrt(count)),
+                width=.2,                    # Width of the error bars
+                position=position_dodge(.9))+
+                labs(title = "Average Education by Employment Type and Gender")+
+                  labs(x = "", y="Average Education", fill= "") + 
+  guides(fill=FALSE)
+
+
+####### ----- GGPLOT with just occupation ----###
+
+######### does Average education look like between the two sectors ######
+
+occupation_only <- Occupationfilter %>%
+  group_by(occupation) %>% 
+  summarise(
+    avg_ed = mean(edu_attainment, na.rm = T),
+    sd_edu = sd(edu_attainment, na.rm = T),
+    count = n()
+  ) %>%
+  mutate(type = ifelse(occupation == 2 , "Informal", NA),
+         type = ifelse(occupation == 1, "Formal", type)
   )
+
+# Error bars represent standard error of the mean
+ggplot(occupation_only, aes(x=type, y=avg_ed, fill=as.factor(type))) + 
+  geom_bar(position=position_dodge(), stat="identity") +
+  geom_errorbar(aes(ymin=avg_ed-sd_edu/sqrt(count), ymax=avg_ed+sd_edu/sqrt(count)),
+                width=.2,                    # Width of the error bars
+                position=position_dodge(.9))+
+  labs(title = "Average Education by Employment Type")+
+  labs(x = "", y="Average Education", fill= "") + 
+  guides(fill=FALSE)
+
 
 #fyi 1 = male, 2 = female
 #reminder 1 = formal 2 = informal
 
 ### What happens when we add age, coupled with gender + occupation?
 
-Occupationfilter %>%
-  group_by(occupation, gender, AGE) %>% 
+Occup_gen_age <- Occupationfilter %>%
+  group_by(occupation, gender) %>% 
   summarise(
-    avg_ed = mean(edu_attainment, na.rm = T),
-    sd_edu = sd(edu_attainment),
+    avg_age = mean(AGE, na.rm = T),
+    sd_age = sd(AGE, na.rm = T),
     count = n()
+  ) %>%
+  mutate(type = ifelse(occupation == 2 & gender == 1, "Informal Male", NA),
+         type = ifelse(occupation == 2 & gender == 2 , "Informal Female", type),
+         type = ifelse(occupation == 1 & gender == 2, "Formal Female", type),
+         type = ifelse(occupation == 1 & gender == 1, "Formal Male", type)
   )
+
+# Error bars represent standard error of the mean
+ggplot(Occup_gen_age, aes(x=type, y=avg_age, fill=as.factor(gender))) + 
+  geom_bar(position=position_dodge(), stat="identity") +
+  geom_errorbar(aes(ymin=avg_age-sd_age/sqrt(count), ymax=avg_age+sd_age/sqrt(count)),
+                width=.2,                    # Width of the error bars
+                position=position_dodge(.9))+
+  labs(title = "Average Age by Employment Type")+
+  labs(x = "", y="Average Age", fill= "") + 
+  guides(fill=FALSE)
+
+
+##############
+
+Times_sansFood <- Occupationfilter %>%
+  group_by(occupation, gender) %>% 
+  summarise(
+    avg_lfood = mean(length_withoutfood, na.rm = T),
+    sd_lfood = sd(length_withoutfood, na.rm = T),
+    count = n()
+  ) %>%
+  mutate(type = ifelse(occupation == 2 & gender == 1, "Informal Male", NA),
+         type = ifelse(occupation == 2 & gender == 2 , "Informal Female", type),
+         type = ifelse(occupation == 1 & gender == 2, "Formal Female", type),
+         type = ifelse(occupation == 1 & gender == 1, "Formal Male", type)
+  )
+# Error bars represent standard error of the mean
+ggplot(Times_sansFood, aes(x=type, y=avg_lfood, fill=as.factor(gender))) + 
+  geom_bar(position=position_dodge(), stat="identity") +
+  geom_errorbar(aes(ymin=avg_lfood-sd_lfood/sqrt(count), ymax=avg_lfood+sd_lfood/sqrt(count)),
+                width=.2,                    # Width of the error bars
+                position=position_dodge(.9))+
+  labs(title = "Food Insecurity by Employment Type")+
+  labs(x = "", y="Average Age", fill= "") + 
+  guides(fill=FALSE)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ##########---------------------------------------##########
 
@@ -234,3 +337,7 @@ ggplot(data = Occupationfilter, aes(x=Occupationfilter$AGE)) +
 
 #ggplot(Occupationfilter, aes(Occupationfilter$edu_attainment, fill = Occupationfilter$occupation)) + 
 #  geom_histogram(alpha = 0.5, aes(y = ..density..), position = 'identity')
+
+
+df1 <- data.frame(Occupationfilter$edu_attainment, Occupationfilter$occupation)
+ggplot(df1, aes(Occupationfilter$edu_attainment, ..count..)) + geom_bar(aes(fill = Occupationfilter$occupation), position = "dodge")
