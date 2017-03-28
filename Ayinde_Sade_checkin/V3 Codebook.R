@@ -1,19 +1,25 @@
-#project proposal part 2
-#	Mar. 3rd, Code for loading/cleaning/validation – 5 points
-
+######### First, I will load the appropriate libraries in #########
 library(dplyr)
 library(data.table)
 
-# then I read it in as a data frame to make my life easier (just alittle)
-#load all data first
+###Next, I load my data first (pulling a CSV from my github###
 
-#The data is from the Afrobarometer Household survey (see afrobarometer.org for more info)
-#This first dataset provides household level responses on gender, employment, education, and reponses to questions about quality of life
+####---The data is from the Afrobarometer Household survey (see afrobarometer.org for more info) -----####
 AfrobarometerData2015 <- read.csv("https://raw.githubusercontent.com/sayinde/ECOG314/Raw-Data/Raw%20Data/CSVnig_r6_data_2015.csv",header = TRUE,stringsAsFactors = FALSE)
+
+####This  dataset provides household level responses on gender, employment, education, Urban/rural geography and reponses to questions about quality of life####
 
 names(AfrobarometerData2015)
 
-# Afrobarometer Data from 2015 round 6
+#########  Using data from Afrobarmoter, I am interested in how educational attainment affects informal
+#to formal sector employment. Additionally, I am interested in how employment in formal sector vs. informal sector, shows differences in other responses#
+
+#### I choose to filter out questions relevant to region (place of living), urban/rural, age, educational attainment, occupation, gender, and a few questions
+# about length of food insecurity, length of time without cash income, frequency without food, how often they've gone without clean water, and how often
+# they've gone without food and so on. These questions (about frequency and length of) were asking on a yearly basis ########
+
+#############-------Afrobarometer Data from 2015 round 6-----------##########
+### I named my dataset "Working Data 2015" to distinguish it from the larger Afrobarometer Dataset ###
 
 WorkingData2015 <-
   select(
@@ -33,12 +39,19 @@ WorkingData2015 <-
    frequency_sansfood = Q8F
   )
 
-# I need to transform these values into 2 seperate categories in the "occupation" row in the Afrobarometer data
+#####---Now, for the informal to formal employment split---#####
+# Currently, the respondent's questions to occupation are from a variety of fields, from mangerial positions, to clerical work, homemaker, agricultural, etc. the list goes on##
+# For the purposes of this research, I want to reclassify these job occupations into two different sectors, "informal employment" and "formal employment"
+### Informal employment is classified as non-agricultural based positions, typically low-skilled, and more specifically, unmonitored and un-taxed (lightly defined)
+# With this information, I left out some positions (student, agriculture), and seperated the rest into two categories.
+
+#I need to transform these values into 2 seperate categories in the "occupation" row in the Afrobarometer data
 #formal sector jobs = 1
 #informal sector jobs = 2
 str(WorkingData2015$occupation)
 
-#I'm using a filter because I only "care" about the ones that I'm coding for informal and formal
+#I'm using a filter because I only "care" about the occupations that I'm coding for informal and formal
+
 Occupationfilter <-
   filter(
     WorkingData2015,
@@ -48,6 +61,8 @@ Occupationfilter <-
       (occupation == 8) | (occupation == 10) | (occupation == 5)
   )
 
+# I made a data frome called Occupation Filter because I didn't want to override my previous dataset, "Working Data 2015" (personal preference)
+## now, with this code, I have reclassified certain occupation responses into "informal"-- which equals 1, and "formal" -- which equals 2
 Occupationfilter <- Occupationfilter %>%
   mutate(occupation =
            ifelse(occupation == 99, NA, occupation),
@@ -62,8 +77,10 @@ Occupationfilter <- Occupationfilter %>%
          occupation =  ifelse(occupation == 5, 2, occupation)
   )
 
-#recoding the "99's" in the educational attainment column as NAs (because that's what they are)
-#also recoding the values so that they are a bit more intuitive
+#########recoding the "99's" in the educational attainment column as NAs (because that's what they are)
+#also recoding the grading values so that they are a bit more intuitive to the reader
+###Meaning >> Instead of "completing secondary school" being equivalent to 5, it'll be equivalent to 12
+
 Occupationfilter <- Occupationfilter %>%
   mutate(
     edu_attainment =
@@ -78,7 +95,7 @@ Occupationfilter <- Occupationfilter %>%
     edu_attainment =  ifelse(edu_attainment == 9, 18, edu_attainment)
   )
 
-#recoding the "dont knows"/aka 9's as NA's
+##### Here, i'm recoding all the "dont knows"/aka 9's as NA's, because it'll make things easier when I'm conducting my analyses ####
 Occupationfilter <- Occupationfilter %>%
   mutate(
     length_withoutfood =  ifelse(length_withoutfood == 9, NA, length_withoutfood))
@@ -99,7 +116,13 @@ Occupationfilter <- Occupationfilter %>%
   mutate(
     length_withoutcash =  ifelse(length_withoutcash == 9, NA, length_withoutcash))
 
-#grouping informal-formal participation by avg. education
+
+#----------------#################################################################################------------------------#
+
+### Now, I'm just checking out my data #####
+
+## Here, I'm grouping informal-formal participation by avg. education
+
 Occupationfilter %>%
   group_by(occupation, gender) %>% 
   summarise(
@@ -111,7 +134,8 @@ Occupationfilter %>%
 #fyi 1 = male, 2 = female
 #reminder 1 = formal 2 = informal
 
-#What happens when we add age, coupled with gender + occupation?
+### What happens when we add age, coupled with gender + occupation?
+
 Occupationfilter %>%
   group_by(occupation, gender, AGE) %>% 
   summarise(
@@ -120,7 +144,7 @@ Occupationfilter %>%
     count = n()
   )
 
-#--------------------#
+##########---------------------------------------##########
 
 #now I want to see this across different regions + urban/rural differences
 #please see longer codebook (word document) for region names, etc
