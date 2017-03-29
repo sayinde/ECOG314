@@ -2,31 +2,31 @@
 library(dplyr)
 library(data.table)
 
-###Next, I load my data first (pulling a CSV from my github###
+###Next, I load my data first (pulling a CSV from my github) ###
 
 ####---The data is from the Afrobarometer Household survey (see afrobarometer.org for more info) -----####
 AfrobarometerData2015 <- read.csv("https://raw.githubusercontent.com/sayinde/ECOG314/Raw-Data/Raw%20Data/CSVnig_r6_data_2015.csv",header = TRUE,stringsAsFactors = FALSE)
 
-####This  dataset provides household level responses on gender, employment, education, Urban/rural geography and reponses to questions about quality of life####
+####This  dataset provides household level responses on gender, employment,
+#education, Urban/rural geography and reponses to questions about quality of life in Nigeria (2015)####
 
 names(AfrobarometerData2015)
 
 #########  Using data from Afrobarmoter, I am interested in how educational attainment affects informal
 #to formal sector employment. Additionally, I am interested in how employment in formal sector vs. informal sector, shows differences in other responses#
 
-#### I choose to filter out questions relevant to region (place of living), urban/rural, age, educational attainment, occupation, gender, and a few questions
+#### I selected questions relevant to region (place of living), urban/rural, age, educational attainment, occupation, gender, and a few other questions
 # about length of food insecurity, length of time without cash income, frequency without food, how often they've gone without clean water, and how often
-# they've gone without food and so on. These questions (about frequency and length of) were asking on a yearly basis ########
+# they've gone without food and so on. These questions (about frequency and length of) were based on a yearly basis (e.g. How often in the past year, have you been without food) ########
 
-#############-------Afrobarometer Data from 2015 round 6-----------##########
+#############-------Using data from Afrobarometer Data from 2015 round 6-----------##########
 ### I named my dataset "Working Data 2015" to distinguish it from the larger Afrobarometer Dataset ###
 
 WorkingData2015 <-
   select(
     AfrobarometerData2015,
-#    RespondentNum = RESPNO,
-    URBRUR,
-    REGION,
+    URBRUR, #this means URBAN/RURAL
+    REGION, #region or province the reponsdent lives in
     AGE = Q1,
     edu_attainment = Q97,
    occupation = Q96A,
@@ -40,17 +40,20 @@ WorkingData2015 <-
   )
 
 #####---Now, for the informal to formal employment split---#####
-# Currently, the respondent's questions to occupation are from a variety of fields, from mangerial positions, to clerical work, homemaker, agricultural, etc. the list goes on##
+
+# Currently, the respondent's questions to occupation are from a variety of fields,
+#from mangerial positions, to clerical work, homemaker, agricultural, etc. the list goes on##
+
 # For the purposes of this research, I want to reclassify these job occupations into two different sectors, "informal employment" and "formal employment"
-### Informal employment is classified as non-agricultural based positions, typically low-skilled, and more specifically, unmonitored and un-taxed (lightly defined)
-# With this information, I left out some positions (student, agriculture), and seperated the rest into two categories.
+### Informal employment is classified as unmonitored and un-taxed (lightly defined)
+# With this information, I left out some positions (student), and seperated the rest of the employment options into two categories.
 
 #I need to transform these values into 2 seperate categories in the "occupation" row in the Afrobarometer data
 #formal sector jobs = 1
 #informal sector jobs = 2
 str(WorkingData2015$occupation)
 
-#I'm using a filter because I only "care" about the occupations that I'm coding for informal and formal
+#I'm using a filter because I'm only paying attention to the occupations that I'm coding for informal and formal
 
 Occupationfilter <-
   filter(
@@ -58,24 +61,27 @@ Occupationfilter <-
     (occupation == 4) |
       (occupation == 6) | (occupation == 7) | (occupation == 9) |
       (occupation == 4) | (occupation == 11) | (occupation == 12) |
-      (occupation == 8) | (occupation == 10) | (occupation == 5) | (occupation == 3)
+      (occupation == 8) | (occupation == 10) | (occupation == 5) | (occupation == 3) | (occupation == 2)
   )
 
-# I made a data frome called Occupation Filter because I didn't want to override my previous dataset, "Working Data 2015" (personal preference)
-## now, with this code, I have reclassified certain occupation responses into "informal"-- which equals 1, and "formal" -- which equals 2
+# I made a data frome called Occupation Filter because I didn't want to override my previous dataset, called "Working Data 2015" (personal preference)
+## now, with this code (below), I have reclassified certain occupation responses into "informal"-- which equals 2, and "formal" -- which equals 1
+
 Occupationfilter <- Occupationfilter %>%
-  mutate(occupation =
-           ifelse(occupation == 99, NA, occupation),
-         occupation =  ifelse(occupation == 4, 1, occupation),
-         occupation =  ifelse(occupation == 6, 1, occupation),
-         occupation = ifelse(occupation == 7, 1, occupation),
-         occupation = ifelse(occupation == 9, 2, occupation),
-         occupation = ifelse(occupation == 11, 2, occupation),
-         occupation = ifelse(occupation == 12, 2, occupation),
-         occupation =  ifelse(occupation == 8, 2, occupation),
-         occupation = ifelse(occupation == 10, 2, occupation),
-         occupation =  ifelse(occupation == 5, 2, occupation),
-         occupation =  ifelse(occupation == 3, 2, occupation)
+  mutate(
+    occupation =
+      ifelse(occupation == 99, NA, occupation),
+    occupation =  ifelse(occupation == 4, 2, occupation),
+    occupation =  ifelse(occupation == 6, 2, occupation),
+    occupation = ifelse(occupation == 7, 2, occupation),
+    occupation =  ifelse(occupation == 3, 2, occupation),
+    occupation =  ifelse(occupation == 2, 2, occupation),
+    occupation = ifelse(occupation == 9, 1, occupation),
+    occupation = ifelse(occupation == 11, 1, occupation),
+    occupation = ifelse(occupation == 12, 1, occupation),
+    occupation =  ifelse(occupation == 8, 1, occupation),
+    occupation = ifelse(occupation == 10, 1, occupation),
+    occupation =  ifelse(occupation == 5, 1, occupation)
   )
 
 #########recoding the "99's" in the educational attainment column as NAs (because that's what they are)
@@ -120,9 +126,13 @@ Occupationfilter <- Occupationfilter %>%
 
 #----------------#################################################################################------------------------#
 
-### Now, I'm just checking out my data #####
+### Now, for some summary statistics #####
 
+library(ggplot2)
+
+###------ GG PLOT GRAPH 1 -----## 
 ## Here, I'm grouping informal-formal participation by avg. education
+#-- I want to see the distribution of educational attainment by gender and occupation --#
 
 occu_gender <- Occupationfilter %>%
   group_by(occupation, gender) %>% 
@@ -150,7 +160,7 @@ ggplot(occu_gender, aes(x=type, y=avg_ed, fill=as.factor(gender))) +
 
 ####### ----- GGPLOT with just occupation ----###
 
-######### does Average education look like between the two sectors ######
+######### GRAPH 2: What average education look like between the two sectors? ######
 
 occupation_only <- Occupationfilter %>%
   group_by(occupation) %>% 
@@ -174,10 +184,9 @@ ggplot(occupation_only, aes(x=type, y=avg_ed, fill=as.factor(type))) +
   guides(fill=FALSE)
 
 
-#fyi 1 = male, 2 = female
-#reminder 1 = formal 2 = informal
 
-### What happens when we add age, coupled with gender + occupation?
+######------------GRAPH 3: What happens when we add age, coupled with gender + occupation? ------------######
+# I'm interested in seeing average age among two sectors #
 
 Occup_gen_age <- Occupationfilter %>%
   group_by(occupation, gender) %>% 
@@ -203,7 +212,7 @@ ggplot(Occup_gen_age, aes(x=type, y=avg_age, fill=as.factor(gender))) +
   guides(fill=FALSE)
 
 
-##############
+############## ------ GRAPH 4: FOOD INSECURITY --- #########
 
 Times_sansFood <- Occupationfilter %>%
   group_by(occupation, gender) %>% 
@@ -228,26 +237,7 @@ ggplot(Times_sansFood, aes(x=type, y=avg_lfood, fill=as.factor(gender))) +
   guides(fill=FALSE)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-##########---------------------------------------##########
+##########-------------------GRAPHS DONE --------------------##########
 
 #now I want to see this across different regions + urban/rural differences
 #please see longer codebook (word document) for region names, etc
@@ -265,58 +255,12 @@ summary(Occupationfilter)
 
 ##################################################
 
-names(Occupationfilter)
-
-hist(
-  log(Occupationfilter$edu_attainment),
-  breaks = 10,
-  main = "Histogram of Educational Attainment",
-  xlab = "Educational level",
-  col = "green",
-  xlim=c(0,6)
-)
-
-#save as a reference
-#https://www.datacamp.com/community/tutorials/15-questions-about-r-plots#q6
-
-boxplot(URBRUR ~ edu_attainment,
-        data = Occupationfilter,
-        main = "Educational Attainment split by Urban Rural",
-        xlab = "Educational Attainment",
-        ylab = "Urban/Rural")
-
-boxplot(REGION ~ occupation,
-        data = Occupationfilter,
-        main = "Informal-Formal participation by region",
-        xlab = "Occupation",
-        ylab = "Region")
-
-library(ggplot2)
-
-edu_employ <- ggplot(Occupationfilter,aes(occupation,edu_attainment,color=as.factor(gender)))+
-geom_point()
-
-edu_employ
-
-#reminder/look @ word doc codebook
-#1 is male
-# 2 is gender
-#1 is formal
-#2 is informal
-
-#plot.data1 <- Occupationfilter %>% mutate(value = as.numeric(AGE))
-#ignore prev. line^
+# FEEL FREE TO IGNORE THIS LINE BELOW. I was just messing around with these graphs #
 
 Age_Employ <- ggplot(Occupationfilter,aes(AGE, occupation,color=as.factor(gender)))+
   geom_point()
 
 Age_Employ
-
-
-Agehist <- ggplot(data=Occupationfilter, aes(Occupationfilter$AGE)) + geom_histogram()
-
-Agehist
-
 
 qplot(Occupationfilter$AGE,
       geom="histogram",
@@ -327,17 +271,9 @@ qplot(Occupationfilter$AGE,
       col=I("red"),
       alpha=I(.2))
 
-
 ggplot(data = Occupationfilter, aes(x=Occupationfilter$AGE)) +
   geom_histogram(breaks = seq(20, 50),
                  col = "red",
                  aes(fill = ..count..) )+
                 labs(title = "Histogram for Age")+
                  labs(x = "Age", y="Count")
-
-#ggplot(Occupationfilter, aes(Occupationfilter$edu_attainment, fill = Occupationfilter$occupation)) + 
-#  geom_histogram(alpha = 0.5, aes(y = ..density..), position = 'identity')
-
-
-df1 <- data.frame(Occupationfilter$edu_attainment, Occupationfilter$occupation)
-ggplot(df1, aes(Occupationfilter$edu_attainment, ..count..)) + geom_bar(aes(fill = Occupationfilter$occupation), position = "dodge")
