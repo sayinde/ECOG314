@@ -1,0 +1,126 @@
+```{r, message=FALSE, warning=FALSE, include=FALSE}
+library(ggplot2)
+library(dplyr)
+```
+
+---
+title: "Getting to Work: Informal to Formal Sector Participation in Nigeria"
+author: "Sade Ayinde"
+date: "April 14, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction 
+
+  As developing economies continue to mature, growth in a country’s labor force has proved necessary for sustained growth. Nigeria’s labor force is strongly defined by its informal sector, comprised of small business women and men, skilled artisans, market vendors, tailors, and more. 
+  The terms “informal economy” and “informal sector” were coined by Anthropologist Keith Hart, in “Informal Income Opportunities and Urban Employment in Ghana” (1973), where he conducted research on the migration patterns and urban labor markets. During his field research, Hart focused on urban areas of Southern Ghana in the 1960s. At the time, informal employment constituted as economic activities of low-income populations. Due to unattainable requirements, unskilled and illiterate workers found limitations and barriers to entry in the urban labor market. Over the years, Hart and other academics have continued to contribute to the surrounding literature on informal employment and informal sector participation. 
+  The main consequences of the underground economy are divided by the macro-level, market-level, and household-level.  On the macro level, the informal economy distorts labor market information and limits the effectiveness of public policies and services. On the market level, there is a limited access to formal support, which in turn, limits productivity, growth and innovation.  Lastly, at the household level, informal employment results in a lack of social insurance. While informal employment marginally reduces unemployment, its untaxed and unmonitored nature is often seen as an impediment to the actualized growth of a country’s GDP. Using a mixed-method approach, this study investigates the effects of education, age, urban/rural location, and gender on probability of entrance into the formal sector of Nigeria using a logit regression model.  Initial results from the analysis of contributing factors is discussed, including an approach that evaluates the probability of statistically significant association in returns of educational attainment, and other factors. Together, these findings suggest that those in the informal sector had lower living standards, based on “quality of life” measurements in food and water insecurity, shortage of cooking fuel, and cash income volatility.
+
+## Data Description
+
+  For the primary research data, I used household-level data from the Afrobarometer Survey Index. The Afrobarometer is a “pan-African, non-partisan research network that conducts public attitude surveys on democracy, governance, economic conditions and other issues in more than 35 countries across Africa.” To date, the Afrobarometer has conducted six rounds of surveys, spanning from 1999 - 2015. I retrieved the dataset specific to Nigeria and selected its most recent round of data collection, round 6 (2015 data), starting with 2,400 observations. Ideally, I would have been able to conduct a time-series analysis spanning Rounds 1-6. However, the main variable of “occupation”—which I later use to classify “informal” and “formal” work, was only recently introduced as a question in round 6 of the data. I chose a country-specific dataset to provide a more in-depth analysis for my research question.
+  In testing my hypothesis, I selected "occupation" as the outcome/dependent variable to be tested using the logit model regression. The options for "occupation" were Informal (0) and Formal (1). I then chose age, gender, urban/rural location, and education levels as the independent variables in the model. All independent values were re-coded to be binary values in order to functional with the logit equation. These independent variables allow me to see the statistical significance of each variable on the effect of the final outcome. *Things to note*: Given the availability of data, I understand that there are limitations to only looking at these specific variables. This equation does not provide information on marriage or total fertility rate/average child per woman. Undoubtedly, these are important variables that would have a major effect on a person's entrance into the formal sector/probability of engaging in formal work. Perhaps marriage would lead to less formal work, or a higher number of children per worker would also change probability of formal sector work. Because I was not able to find such data on a house-hold level, I understand that the exclusion of such information will bias my initial results. <br><Br>
+<span style="font-weight:bold; color:green; size: 12px;">
+Data cleaning: </span> <br>
+  After reading in the original CSV file, I filtered and renamed the variables to make the data more accessible to the user. Afterwards, I recoded the occupation values into binary options, based on classification of "informal" and "formal" work.
+
+| Informal Employment | Formal Employment   |
+| ------------- |:-------------:|
+| “vendor/hawkers”     | “supervisor” |
+| “unskilled manual worker”    | “mid-level professional”      |
+|  “artisan/skilled manual worker” | “upper-level professional”      | 
+| “housewife/homemaker”     | “clerical or secretarial” |
+|  "Agriculture/farming/fishing/forestry"    | “security services”      |
+|  | “retail shop”     |
+  These classifications are debatable (as academics spend their work defining the two types of work but I tried my best to define the two based on majority of the literature on informal employment definitions). I excluded the "student" category/occupation, and unemployment values. I recoded values to identify missing values as NA, then I used coding to remove any NA values, in order to make my dataset a "complete case."
+<br><BR>
+<span style="font-weight:bold; color:green; size: 12px;">Summary Statistics: </span> <br> After cleaning and recoding the variables, my final dataset included 1,647 observations to conduct my analyses.
+
+
+| Variable | Observations  | Mean | Std. Dev | Min | Max |
+| ------------- |:-------------:|:-------------:|:-------------:|:-------------:|:-------------:|
+| EDU_Formal_Male       | 420 | 10.9 | 4.45 | 0 | 18 |
+| EDU_Formal_Female     | 283 | 11.2 | 3.7 | 0 | 18 |
+| EDU_Informal_Male     | 413 | 8.9 | 4.76 | 0 | 18 |
+| EDU_Informal_Female   | 551 | 7.71 | 4.7 | 0 | 18 |
+| AGE_Formal_Male       | 420 | 34.4 | 10.9 | 18 | 80 |
+| AGE_Formal_Female     | 283 | 32.6 | 10.02 | 18 | 72 |
+| AGE_Informal_Male     | 413 | 35.8 | 12.57 | 18 | 87 |
+| AGE_Informal_Female   | 551 | 32.13 | 9.79 | 18 | 87 |
+
+
+<BR><b>** Packages used include: dplyr, mfx, texreg, ggplot2, and data.table **</b></br>
+
+## Analysis
+
+### Graphical Analysis: Quality of Life Among Groups
+Apart from differences in education between the two groups, differences in living standards were revealed between the two groups. Using responses from questions on fuel consistency, clean water insecurity, food insecurity, and consistence of medicine.
+<BR><BR>
+
+### Figure 1: 
+![Figure 1:](H20_GG.png) 
+<BR><BR>
+The questions about living standards were interesting and revealed minor differences between the two labor force populations. When asked, “Over the past year, how often, if ever, have you or anyone in your family: Gone without enough clean water for home use?”, in which the responses were (“Never”, “Just once or twice” (1x), “Several times” (2x), “Many times”(3x), and “Always” (4x). Respondents in the informal sector, on average, revealed more instances of unclean water in the household. The responses were graphed as percentages, as opposed to raw numbers, to show a more accurate representation of each population. 
+
+### Figure 2:
+![Figure 2:](CASH_VOL.png)
+<BR><BR>
+When asked about cash volatility, “Over the past year, how often, if ever, have you or anyone in your family: Gone without a cash income?”, Response options were the same as previous questions - (“Never”(0), “Just once or twice” (1x), “Several times” (2x), “Many times”(3x), and “Always” (4x). On average, a higher percentage of those in the informal sector reported, “never” as an option, when asked about cash income volatility.  Following, formal sector workers were also slightly more likely to report “once or twice”. For all other options, “several times, many times, and always”, those in the informal sector reported higher instances without cash income.
+
+<BR>
+
+### Figure 3
+![Figure 3: ](FUELgg.png)
+<BR><BR>
+When charted, formal sector workers showed a higher frequency of cooking fuel inconsistency.
+
+### Figure 4
+![Figure 4:](Fsecurity.png)
+<BR><BR>
+When charted for instances of food insecurity by employment type, the formal sector was more likely to show higher occurences of food insecurity. The main reason that I propose these were the results was because the informal sector included a large percentage of workers in the agricultural sector (fishing and farming). This percent of the population could possibly be an indicator to drive down percentage in the informal sector.
+
+### Figure 5
+![Figure 5: ](Medsgg.png)
+<BR><BR>
+Mixed results were shown for occurances of medicine inconsistency between employment type.
+
+
+### Regression Specification: Logit Model
+The logit model equation is as follows:
+$$\textbf{logit}(P_{occupation}) = \frac{log(P_{occupation})}{1-P_{occupation}} = \beta_{0} + 
+\beta_{1}Gender_1 + \beta_{2}Age_2 + \beta_{3}Education_3 + \beta_{3}UrbanRural_3 $$
+After calculating the regression model, I calculated the marginal effects of the independent variables of education, age, and urban/rural location. The variables for education, and age had to spliced into 3 and sometimes 4 different categories in order to make them binary code and then calculate the marginal effects.
+
+<span style="font-weight:bold; color:green; size: 12px;">
+Marginal Effects Table: </span> <br>
+
+![Figure 5: Marginal Effects results of Logit model regression](Mfxgraph.png)
+<BR><BR>
+
+** Breakdown of variables: Gender, was coded with two options of male or female (1 or 0, respectively). The age variable, was coded into Age1, Age2, and Age3, in order to allow for them to be binary. Age1 was determined on the portion of the population that was greater than 25 years old, Age2 was greater than 33 years, and Age3 was for those greater 45 years old. The education variables were split between 4 levels: primary school completed (educ1), greater than primary school but less than high school (educ2), college completed (educ3), and post-graduate completed (educ4). Lastly, URBRUR was for Urban/Rural location with 1 representing an URBAN location and 0 for rural location. **
+
+> Interpretation of results:
+Based on the results, it was determined that throughout each model, gender remained statistically significant (high). 
+In the first model, it was shown that males had a .16 higher chance of entrance into the formal sector. In the second model, gender, coupled with age, showed that even with age as a factor, the most statistically significant variable was gender. In the Age variables, it was shown that the older a person was, it decreased their chances of entrance into the formal sector. With the third model, gender remains statistically significant along with other levels of education. Based on the 4 different levels of education, the variable that increases ones chance of entrance into the formal sector is if a person has completed college/university (which leads to them having a .30 higher chance of entrance into the formal sector). Lastly, when the variable URBRUR was added (in the last model 4) - it decreased the effect of having completed primary school (educ1). Again, gender remained statistically significant, as did the educ2 and educ3 variable. Being in a urban location held a .15 probability of entrance into the formal sector.
+
+
+## Conclusion
+
+Using a 2015 dataset from Afrobarometer’s household survey, differences between the two groups were analyzed and revealed differences in demographics and also quality of life.
+
+The summary results of my data analysis showed that the livelihoods of those in the formal and informal sector are evident. Consistently, it was shown that when surveyed about frequency of clean water and consistency and access to medicine, those in the informal sector were more likely to report instances of inconsistent access. In some instances, informal sector workers showed some stability in instances of food security. But results were mixed for levels of cash volaility between formal and informal sector.
+
+After conducting four logit model regressions, it was discovered that gender, consistently remained a statistically significant factor in improving ones chances of entrance into the formal sector. In the final model, it showed than a male had a .15 chance higher than a female of entrance into the formal sector. Additionally, those who completed college had a .29 higher chance of entrance into the formal sector, than those with lower levels of education. Lastly, geographic location was at the forefront, when it was shown than those living in urban landscapes had a .15 higher chance of entrance into the formal sector.
+
+Many diverse activities occur outside of the formal economy and there is significant variation in the composition of the informal economy. People in the informal economy participate for a variety of reasons, whether due to barriers to entry, an entrepreneurial desire, or other economic reasons. In some cases, informal employment is a full-time commitment; a result of skillset and opportunity. Even with continued economic growth, most of Nigeria’s population remains in the agriculture and informal non-agriculture sectors.
+Migration from rural areas to urban areas includes many economic push factors: low agricultural productivity, poor economic conditions, lack of opportunities for advancement, and exhaustion of natural resources. When analyzing the employment sector in the country’s population, the results are striking. Farming still remains the main form of employment in the country, and more than half of those in the nonfarm sector work for themselves. Nigeria’s economic capital, Lagos has a unique aspect of its labor force, in that, its informal sector is larger than its formal sector. The economic and policy consequences of this phenomenon can be seen in provision of public services, actualized GDP growth, and more. The results suggest that while informal work is able to reduce underemployment, it provides onlya temporary stability that is then breached with emerging issues in health and overall welfare. For the most part, informal workers choose their positions not out of desire, but rather out of neccessity- a livelihood that is reflective of geographic posiiton, skills development and education. Given this, the informal sector is still a catalyst for employment generation, and studying this phenomenon can provide insight into Nigeria’s working class.
+
+## References
+
+Afrobarometer. "The Afrobarometer series."
+
+Hart, Keith. "Informal income opportunities and urban employment in Ghana." The journal of modern African studies 11.01 (1973): 68.
