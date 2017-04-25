@@ -32,10 +32,11 @@ Data cleaning: </span> <br>
 | ------------- |:-------------:|
 | “vendor/hawkers”     | “supervisor” |
 | “unskilled manual worker”    | “mid-level professional”      |
-|  “artisan/skilled manual worker” | “upper-level professional”      | 
+|  | “upper-level professional”      | 
 | “housewife/homemaker”     | “clerical or secretarial” |
 |  "Agriculture/farming/fishing/forestry"    | “security services”      |
 |  | “retail shop”     |
+|  | “artisan/skilled manual worker”    |
   These classifications are debatable (as academics spend their work defining the two types of work but I tried my best to define the two based on majority of the literature on informal employment definitions). I excluded the "student" category/occupation, and unemployment values. I recoded values to identify missing values as NA, then I used coding to remove any NA values, in order to make my dataset a "complete case."
 <br><BR>
 <span style="font-weight:bold; color:green; size: 12px;">Summary Statistics: </span> <br> After cleaning and recoding the variables, my final dataset included 1,647 observations to conduct my analyses.
@@ -98,14 +99,14 @@ After calculating the regression model, I calculated the marginal effects of the
 <span style="font-weight:bold; color:green; size: 12px;">
 Marginal Effects Table: </span> <br>
 
-![Figure 5: Marginal Effects results of Logit model regression](Mfxgraph.png)
+![Figure 5: Marginal Effects results of Logit model regression](Mfxgraph1.png)
 <BR><BR>
 
-** Breakdown of variables: Gender, was coded with two options of male or female (1 or 0, respectively). The age variable, was coded into Age1, Age2, and Age3, in order to allow for them to be binary. Age1 was determined on the portion of the population that was greater than 25 years old, Age2 was greater than 33 years, and Age3 was for those greater 45 years old. The education variables were split between 4 levels: primary school completed (educ1), greater than primary school but less than high school (educ2), college completed (educ3), and post-graduate completed (educ4). Lastly, URBRUR was for Urban/Rural location with 1 representing an URBAN location and 0 for rural location. **
+** Breakdown of variables: Gender, was coded with two options of male or female (1 or 0, respectively). The age variable, was coded into Age1, Age2, and Age3, and Age 5 in order to allow for them to be binary. Age1 was determined on the portion of the population that was 18-25 years old, Age2 was 26-34 years old, Age3 was for those 35-45 years old, Age4 was 46-55 years old, and Age5 was above 56 years old The education variables were split between 4 levels: primary school completed (educ1), greater than primary school but less than high school (educ2), college completed (educ3), and post-graduate completed (educ4). Lastly, URBRUR was for Urban/Rural location with 1 representing an URBAN location and 0 for rural location. **
 
 > Interpretation of results:
 Based on the results, it was determined that throughout each model, gender remained statistically significant (high). 
-In the first model, it was shown that males had a .16 higher chance of entrance into the formal sector. In the second model, gender, coupled with age, showed that even with age as a factor, the most statistically significant variable was gender. In the Age variables, it was shown that the older a person was, it decreased their chances of entrance into the formal sector. With the third model, gender remains statistically significant along with other levels of education. Based on the 4 different levels of education, the variable that increases ones chance of entrance into the formal sector is if a person has completed college/university (which leads to them having a .30 higher chance of entrance into the formal sector). Lastly, when the variable URBRUR was added (in the last model 4) - it decreased the effect of having completed primary school (educ1). Again, gender remained statistically significant, as did the educ2 and educ3 variable. Being in a urban location held a .15 probability of entrance into the formal sector.
+In the first model, it was shown that males had a .16 higher chance of entrance into the formal sector. In the second model, gender, coupled with age, showed that even with age as a factor, the most statistically significant variable was gender. In the Age variables, it was shown that the older a person was, it increased their chances of entrance into the formal sector. With the third model, gender remains statistically significant along with other levels of education. Based on the 4 different levels of education, the variable that increases ones chance of entrance into the formal sector is if a person has completed college/university (which leads to them having a .30 higher chance of entrance into the formal sector). Lastly, when the variable URBRUR was added (in the last model 4) - it decreased the effect of having completed primary school (educ1). Again, gender remained statistically significant, as did the educ2 and educ3 variable. Being in a urban location held a .15 probability of entrance into the formal sector.
 
 
 ## Conclusion
